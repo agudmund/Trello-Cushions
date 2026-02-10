@@ -24,12 +24,14 @@ class FeatureListDialog(QDialog):
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(10, 10, 10, 10)
 
+        # Header
         title = QLabel("Current cushions achievements ✨")
         title.setAlignment(Qt.AlignCenter)
         title.setStyleSheet("font-size: 18px; font-weight: bold; color: #8a7a67;")
         main_layout.addWidget(title)
         main_layout.addSpacing(10)
 
+        # Scroll area
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setStyleSheet("QScrollArea { border: none; }")
@@ -37,6 +39,7 @@ class FeatureListDialog(QDialog):
         content_layout = QVBoxLayout(content)
         content_layout.setSpacing(8)
 
+        # Bullet icon logic
         custom_path = Settings.get("bullet_icon_path")
         fallback_path = "assets/icons/bulletpoint.ico"
 
@@ -56,30 +59,31 @@ class FeatureListDialog(QDialog):
                 bullet_text = "•"
                 print("Warning: No valid bullet icon found (custom or fallback)")
 
+        # ── The features list ── (moved here so it's defined before the loop)
         features = [
-    "Dark cozy theme with soft pastel accents",
-    "Drag-and-drop file area with hover feedback",
-    "Browse file button",
-    "Live progress bar during upload",
-    "Creates new Trello board with custom name",
-    "Adds paragraphs as cards in 'To Review' list",
-    "Cards named 'Note N' (pretty, customizable)",
-    "Truncates long descriptions to fit Trello limits",
-    "Success message with 'Open now?' popup",
-    "Auto-opens board in browser on confirmation",
-    "Sensitivity slider for zoom drag speed (saved)",
-    "Settings gear to change app icon (saved)",
-    "Feature list icon (📋) to view this dialog",
-    "Daily logging to trello_log_YYYY-MM-DD.txt",
-    "Graceful error handling with friendly messages",
-    "Made with one shared braincell (and zero regrets) 🧠💀",
-    # ── new self-congratulatory meta-features ──
-    "Refuses to resize (perfection needs no opinions)",
-    "Sleeps dramatically between Trello cards (0.6s of pure theater)",
-    "Has a heart icon with perfect alpha (no jagged edges allowed)",
-    "Opens an About box that proudly confesses it was made with literally one shared braincell",
-    "Logs its own existence with zero irony"
-]
+            "Dark cozy theme with soft pastel accents",
+            "Drag-and-drop file area with hover feedback",
+            "Browse file button",
+            "Live progress bar during upload",
+            "Creates new Trello board with custom name",
+            "Adds paragraphs as cards in 'To Review' list",
+            "Cards named 'Note N' (pretty, customizable)",
+            "Truncates long descriptions to fit Trello limits",
+            "Success message with 'Open now?' popup",
+            "Auto-opens board in browser on confirmation",
+            "Sensitivity slider for zoom drag speed (saved)",
+            "Settings gear to change app icon (saved)",
+            "Feature list icon (📋) to view this dialog",
+            "Daily logging to trello_log_YYYY-MM-DD.txt",
+            "Graceful error handling with friendly messages",
+            "Made with one shared braincell (and zero regrets) 🧠💀",
+            "Refuses to resize (perfection needs no opinions)",
+            "Sleeps dramatically between Trello cards (0.6s of pure theater)",
+            "Has a heart icon with perfect alpha (no jagged edges allowed)",
+            "Opens an About box that proudly confesses it was made with literally one shared braincell",
+            "Logs its own existence with zero irony",
+            "Log viewer now has real-time search/filter (type to find messages instantly)",
+        ]
 
         for feature in features:
             row_widget = QWidget()

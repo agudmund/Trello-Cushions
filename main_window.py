@@ -21,7 +21,7 @@ from PySide6.QtWidgets import (
     QToolButton,
     QStyle,
 )
-from PySide6.QtCore import Qt, QSize 
+from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QFont, QColor, QIcon
 
 from utils.logging import log_message
@@ -36,7 +36,7 @@ from widgets.drop_area import CozyDropArea
 from dialogs.settings_dialog import SettingsDialog
 from widgets.feature_list_dialog import FeatureListDialog
 from widgets.log_viewer_dialog import LogViewerDialog
-from widgets.about_dialog import AboutDialog   # ← new import
+from widgets.about_dialog import AboutDialog
 
 
 class TrelloCushionsWindow(QMainWindow):
@@ -46,10 +46,14 @@ class TrelloCushionsWindow(QMainWindow):
         self.setFixedSize(500, 400)
         self.setStyleSheet("background-color: #1e1e1e; color: #e0e0e0;")
 
-        # Load saved custom icon at startup (if exists)
-        icon_path = Settings.get("icon_path")
-        if icon_path and os.path.exists(icon_path):
-            self.setWindowIcon(QIcon(icon_path))
+        # Load saved custom icon at startup (relative path)
+        rel_icon_path = Settings.get("icon_path")
+        if rel_icon_path:
+            # Resolve relative to project root (where main.py lives)
+            project_root = os.path.abspath(os.path.dirname(__file__))
+            abs_icon_path = os.path.normpath(os.path.join(project_root, rel_icon_path))
+            if os.path.exists(abs_icon_path):
+                self.setWindowIcon(QIcon(abs_icon_path))
 
         central = QWidget()
         self.setCentralWidget(central)
@@ -95,7 +99,7 @@ class TrelloCushionsWindow(QMainWindow):
         settings_btn.clicked.connect(self.open_settings)
         top_layout.addWidget(settings_btn)
 
-        # New: About button
+        # About button
         about_btn = QToolButton(self)
         about_btn.setIcon(self.style().standardIcon(QStyle.SP_MessageBoxQuestion))
         about_btn.setIconSize(QSize(24, 24))
@@ -104,6 +108,7 @@ class TrelloCushionsWindow(QMainWindow):
             QToolButton:hover { background: rgba(255,255,255,20); border-radius: 4px; }
         """)
         about_btn.setFixedSize(40, 40)
+        about_btn.setToolTip("About this one-braincell felony")
         about_btn.clicked.connect(self.show_about)
         top_layout.addWidget(about_btn)
 
