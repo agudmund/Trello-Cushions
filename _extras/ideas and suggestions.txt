@@ -1,0 +1,72 @@
+Current
+
+Something else (e.g. improve __init__.py, add type hints, etc.)
+
+Make code more concise
+
+Add type hints to drop_area
+
+Include unit test for drop_area
+
+Start refactoring the big process_file method (split into smaller helper methods, maybe decorate with @log_call)
+Other (e.g. add __init__.py to dialogs/, improve icon saving filename, etc.)
+
+Start cleaning up process_file in the main window
+(split it into smaller methods like _create_board(), _add_cards(), etc.)
+Other (e.g. add type hints, centralize stylesheet strings, etc.)
+
+Start refactoring the big process_file method
+(split into smaller private methods, better error handling, maybe use @log_call
+)
+Minor polish (centralize colors/fonts, add type hints, etc.)
+Something else you have in mind
+
+Refactor/split the big process_file method into smaller private methods
+Add basic error handling improvements or user feedback in case of API failure
+Start thinking about configuration (e.g. board name, list name, delay time as settings)
+Minor cleanups (centralize colors, fonts, remove unused imports, etc.)
+
+Split/refactor the big process_file method in main_window.py (e.g., into _parse_file(), _upload_to_trello(), etc.)
+Centralize styles/colors/fonts (e.g., into a styles.py or constants dict to avoid repeated stylesheet strings)
+Add basic config options (e.g., customizable board name, list name, card prefix via settings dialog)
+Improve error handling (e.g., more specific messages for API failures, retry logic)
+Other ideas (e.g., add unit tests, make parsing smarter for markdown headings)
+
+To make future moves like this less error-prone, you could create a tiny app.py or central import file for common Qt things, but for now this is perfectly fine.
+
+Where to next? (pick your adventure)Here are the most natural follow-ups now that the structure is stable:Polish the parser / card creation  Make splitting smarter (respect markdown headings as card titles, code blocks, lists, etc.)  
+Custom card prefix ("Note 1" → configurable)  
+Better truncation / formatting for descriptions
+
+Refactor process_file
+Split the big method into smaller private ones, e.g.:  _parse_text_to_paragraphs()  
+_create_trello_structure()  
+_add_cards_with_progress()  
+Add better error recovery (skip failed cards, show partial success)
+
+Add real configuration  Move board name, list name, card prefix, delay (0.6s), desc max length into a settings file or dialog  
+Save/load via JSON (like we already do for icon)
+
+Visual / UX love  Centralize colors, fonts, shadows into a styles.py or constants  
+Add subtle animations (fade-in progress, success confetti via canvas-confetti if we ever go web)  
+Tray icon / minimize to tray (nice for a popup utility)
+
+Quality of life  Add type hints throughout  
+Basic unit tests (e.g. for parsing, API helpers)  
+Make the window resizable or add a preview pane for parsed cards before upload
+
+Big swing ideas (if you're feeling adventurous)  Local preview mode: show cards in a mini-kanban inside the app before uploading  
+Support multiple files or batch upload  
+Export back to markdown from Trello (reverse flow)
+
+A few low-to-medium effort ideas that usually feel rewarding right after a big cleanup:Smarter parsing
+Instead of just splitting on double newlines, detect markdown headings (#, ##) as card titles and the following paragraph(s) as description. Bonus: preserve code blocks, bold/italic, lists inside cards.
+Configurable basics
+Add a tiny settings expansion: board name, list name, card prefix (“Note {i}” → “Review item {i}” or whatever), delay between cards (0.6s is polite but maybe user wants faster/slower). Save to a proper config.json instead of hardcoding.
+Preview before upload
+After parsing, show a quick scrollable list or mini-kanban of what cards would be created (title + first 100 chars of desc). “Looks good? Upload” button. Catches typos/mistakes early.
+One-click retry / partial success
+If some cards fail (rate limit, network blip), don’t just swallow it — show which ones failed and offer “Retry failed cards” or “Continue anyway”.
+Make it feel more “cushiony”
+Add a subtle fade-in for the progress bar, or a gentle color pulse on success. Nothing heavy — just enough to match the name.
+

@@ -24,7 +24,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QFont, QColor, QIcon
 
-from utils.logging import log_message
+from utils.logging import AppLogger
 from utils.trello_api import (
     get_credentials,
     create_board,
@@ -42,6 +42,8 @@ from widgets.about_dialog import AboutDialog
 class TrelloCushionsWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.logger = AppLogger.get()
+
         self.setWindowTitle("Trello Cushions 🌱")
         self.setFixedSize(500, 400)
         self.setStyleSheet("background-color: #1e1e1e; color: #e0e0e0;")
@@ -176,31 +178,34 @@ class TrelloCushionsWindow(QMainWindow):
             self, "Select .md/.txt File", start_dir, "Text/Markdown Files (*.txt *.md)"
         )
         if path:
-            Settings.set_directory("last_dir_upload", path)
+            Settings.set_directory("last_dir_upload", os.path.dirname(path))
             self.process_file(path)
 
     def process_file(self, path):
+        self.logger.info(f"Starting upload of {path}")
+
         self.status_label.setText(f"Processing {os.path.basename(path)}...")
         self.progress.setVisible(True)
         self.progress.setValue(0)
 
         try:
-            log_message(f"Starting upload of {path}")
             with open(path, 'r', encoding='utf-8') as f:
                 text = f.read().strip()
             paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
             total = len(paragraphs)
+
             if total == 0:
-                log_message(f"No paragraphs found in {path}")
+                self.logger.info(f"No paragraphs found in {path}")
                 self.status_label.setText("File is empty or has no paragraphs.")
                 self.progress.setVisible(False)
                 return
 
-            log_message(f"Found {total} paragraphs")
+            self.logger.info(f"Found {total} paragraphs")
             self.progress.setRange(0, total)
+
             api_key, token = get_credentials()
             if not api_key or not token:
-                log_message("Keys not found")
+                self.logger.warning("Keys not found - TRELLO_KEY and/or TRELLO_TOKEN missing")
                 self.status_label.setText("Keys not found. Set TRELLO_KEY and TRELLO_TOKEN.")
                 self.progress.setVisible(False)
                 return
@@ -221,7 +226,8 @@ class TrelloCushionsWindow(QMainWindow):
             self.progress.setVisible(False)
             summary = f"Done! {cards_added} cards added."
             self.status_label.setText(summary)
-            log_message(summary)
+            self.logger.info(summary)
+
             reply = QMessageBox.question(
                 self, "Success", f"Board created with {cards_added} cards.\nOpen now?",
                 QMessageBox.Yes | QMessageBox.No
@@ -229,9 +235,8 @@ class TrelloCushionsWindow(QMainWindow):
             if reply == QMessageBox.Yes:
                 webbrowser.open(board_url)
 
-        except Exception as e:
-            error_msg = f"Error during upload: {str(e)}"
-            log_message(error_msg)
-            self.status_label.setText(f"Error: {str(e)}")
+        except Exception:
+            self.logger.exception("Upload processing failed")
+            self.status_label.setText("Error during processing — check log")
             self.progress.setVisible(False)
-            QMessageBox.critical(self, "Error", str(e))
+            QMessageBox.critical(self, "Error", "Something went wrong during upload.\nCheck the log for details.")

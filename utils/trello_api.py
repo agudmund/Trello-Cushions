@@ -4,7 +4,10 @@ import time
 import requests
 from typing import Optional, Tuple
 
-from utils.logging import log_message
+from utils.logging import AppLogger
+
+
+logger = AppLogger.get()
 
 
 def get_credentials() -> Tuple[Optional[str], Optional[str]]:
@@ -13,6 +16,10 @@ def get_credentials() -> Tuple[Optional[str], Optional[str]]:
     token = os.environ.get("TRELLO_TOKEN")
     api_key = api_key.strip() if api_key else None
     token = token.strip() if token else None
+
+    if not api_key or not token:
+        logger.warning("TRELLO_KEY and/or TRELLO_TOKEN environment variables are missing or empty")
+
     return api_key, token
 
 
@@ -30,11 +37,17 @@ def create_board(
         'defaultLists': 'false',
         'prefs_background': 'blue'
     }
-    response = requests.post(url, data=data)
-    response.raise_for_status()
-    board = response.json()
-    log_message(f"Created board: {board['shortUrl']}")
-    return board['id'], board['shortUrl']
+
+    try:
+        response = requests.post(url, data=data, timeout=15)
+        response.raise_for_status()
+        board = response.json()
+        logger.info(f"Created board: {board['shortUrl']}")
+        return board['id'], board['shortUrl']
+
+    except requests.RequestException as e:
+        logger.exception(f"Failed to create Trello board '{board_name}'")
+        raise
 
 
 def create_list(
@@ -52,10 +65,17 @@ def create_list(
         'idBoard': board_id,
         'pos': 'bottom'
     }
-    response = requests.post(url, params=params)
-    response.raise_for_status()
-    log_message(f"Created list: {list_name}")
-    return response.json()['id']
+
+    try:
+        response = requests.post(url, params=params, timeout=10)
+        response.raise_for_status()
+        list_id = response.json()['id']
+        logger.info(f"Created list '{list_name}' on board {board_id}")
+        return list_id
+
+    except requests.RequestException as e:
+        logger.exception(f"Failed to create list '{list_name}' on board {board_id}")
+        raise
 
 
 def create_card(
@@ -76,10 +96,17 @@ def create_card(
         'desc': desc,
         'pos': pos
     }
-    response = requests.post(url, params=params)
-    if response.status_code == 200:
-        log_message(f"Added card: {card_name}")
+
+    try:
+        response = requests.post(url, params=params, timeout=10)
+        response.raise_for_status()
+        logger.info(f"Added card: {card_name}")
         return True
-    else:
-        log_message(f"Failed to create card '{card_name}': {response.text}")
+
+    except requests.HTTPError as e:
+        logger.warning(f"Failed to create card '{card_name}': {response.status_code} - {response.text}")
+        return False
+
+    except requests.RequestException as e:
+        logger.exception(f"Network or unexpected error while creating card '{card_name}'")
         return False
